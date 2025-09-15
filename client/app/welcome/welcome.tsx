@@ -39,7 +39,7 @@ export default function App() {
                   "https://unpkg.com/three@0.160.0/examples/jsm/libs/basis"
                 }
                 rotation={new Euler(-Math.PI / 2, 0, 0)}
-                url="http://localhost:3000/tileset.json"
+                url="https://storage.googleapis.com/xoxo-test-bucket-1/chunk2/tileset.json"
                 maximumScreenSpaceError={48}
                 resetTransform={true}
               />
