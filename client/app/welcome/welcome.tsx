@@ -1,41 +1,52 @@
-import { Object3D, Points, PointsMaterial } from "three";
-import { useCallback } from "react";
+import { useState, useRef, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera, OrbitControls } from "@react-three/drei";
-import { TilesRenderer } from "3d-tiles-renderer/r3f";
+import { ErrorBoundary } from "react-error-boundary";
+import { Matrix4, Euler } from "three";
+import * as THREE from "three";
 
-const TILESET_URL =
-  import.meta.env.VITE_TILESET_URL || "http://localhost:3000/tileset.json";
+import { Loader3DTilesR3FAsset } from "./loader-3dtiles-r3f";
 
-const cameraPosition = [50, 50, 50] as const;
+export default function App() {
+  const camera = useRef(null);
 
-export default function Render() {
   return (
-    <div className="w-screen h-[95vh] bg-amber-100">
-      <Canvas>
-        <TilesRenderer
-          url={TILESET_URL}
-          errorTarget={8}
-          maxDepth={50}
-          onLoadModel={({ scene }: { scene: Object3D }) => {
-            scene.traverse((c) => {
-              if (c instanceof Points) {
-                const material = c.material;
-                if (material instanceof PointsMaterial) {
-                  material.size = 0.01;
-                  material.sizeAttenuation = true;
-                  material.needsUpdate = true;
-                }
+    <div className="h-[90vh] w-screen bg-green-100">
+      <Canvas style={{ background: "#272730" }}>
+        <PerspectiveCamera ref={camera}>
+          <ErrorBoundary
+            fallbackRender={() => (
+              <mesh>
+                <sphereGeometry />
+                <meshBasicMaterial color="red" />
+              </mesh>
+            )}
+          >
+            <Suspense
+              fallback={
+                <mesh>
+                  <sphereGeometry />
+                  <meshBasicMaterial color="yellow" />
+                </mesh>
               }
-            });
-          }}
-        />
-        <PerspectiveCamera makeDefault position={cameraPosition} />
-        <OrbitControls
-          target={[0, 0, 0]}
-          enableDamping={true}
-          dampingFactor={0.1}
-        />
+            >
+              <Loader3DTilesR3FAsset
+                pointSize={1}
+                dracoDecoderPath={
+                  "https://unpkg.com/three@0.160.0/examples/jsm/libs/draco"
+                }
+                basisTranscoderPath={
+                  "https://unpkg.com/three@0.160.0/examples/jsm/libs/basis"
+                }
+                rotation={new Euler(-Math.PI / 2, 0, 0)}
+                url="http://localhost:3000/tileset.json"
+                maximumScreenSpaceError={48}
+                resetTransform={true}
+              />
+            </Suspense>
+          </ErrorBoundary>
+        </PerspectiveCamera>
+        <OrbitControls camera={camera.current} />
       </Canvas>
     </div>
   );
